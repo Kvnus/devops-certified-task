@@ -1,0 +1,10 @@
+cloud_id  = "CHANGE"   # yc config get cloud-id
+folder_id = "CHANGE"   # yc config get folder-id
+zone      = "ru-central1-a"
+
+sa_key_file = "~/.yc/key.json"   # or leave unset and: export YC_TOKEN=$(yc iam create-token)
+
+name_prefix          = "devops-cert"
+ssh_public_key_path  = "~/.ssh/id_yc_mycloud.pub"
+ssh_private_key_path = "~/.ssh/id_yc_mycloud"
+ssh_allowed_cidrs    = ["0.0.0.0/0"]   # better: ["1.2.3.4/32"]
