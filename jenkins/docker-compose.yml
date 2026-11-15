@@ -1,0 +1,24 @@
+services:
+  jenkins:
+    build:
+      context: ..
+      dockerfile: jenkins/Dockerfile
+    container_name: jenkins
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    environment:
+      JENKINS_ADMIN_PASSWORD: ${JENKINS_ADMIN_PASSWORD:?set in jenkins/.env}
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - ./jenkins.yaml:/var/jenkins_home/casc/jenkins.yaml:ro
+      # The project folder: Jenkinsfile, sources and terraform/terraform.tfvars
+      - ..:/project:ro
+      # Keys, read-only from your machine. The Jenkinsfile passes these container paths
+      # to terraform/ansible, so the key names in terraform.tfvars do not matter.
+      - ${YC_SA_KEY_FILE:?set in jenkins/.env}:/var/jenkins_home/.yc/key.json:ro
+      - ${SSH_KEY_FILE:?set in jenkins/.env}:/var/jenkins_home/.ssh/id_ed25519:ro
+      - ${SSH_KEY_FILE:?set in jenkins/.env}.pub:/var/jenkins_home/.ssh/id_ed25519.pub:ro
+
+volumes:
+  jenkins_home:

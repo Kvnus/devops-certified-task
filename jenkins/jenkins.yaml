@@ -1,0 +1,30 @@
+# Jenkins Configuration as Code: admin user + the pipeline job.
+# Cloud settings are NOT stored in Jenkins: terraform.tfvars, key.json and the SSH key
+# are mounted into the container by docker-compose.yml.
+jenkins:
+  systemMessage: "Local Jenkins for the Yandex Cloud pipeline"
+  numExecutors: 2
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: admin
+          password: "${JENKINS_ADMIN_PASSWORD}"
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+
+# The pipeline job is created at startup. The pipeline script is the Jenkinsfile from the
+# mounted project folder (no git needed). After editing the Jenkinsfile: docker compose restart.
+jobs:
+  - script: |
+      def jenkinsfile = new File('/project/Jenkinsfile').text
+      pipelineJob('yc-deploy') {
+        description('Terraform + Ansible: build and deploy the Java app to Yandex Cloud')
+        definition {
+          cps {
+            script(jenkinsfile)
+            sandbox(true)
+          }
+        }
+      }
