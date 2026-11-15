@@ -1,0 +1,8 @@
+---
+# Build the Docker image on the build VM and push it to Yandex Container Registry.
+- name: Build and push application image
+  hosts: build
+  gather_facts: false
+  roles:
+    - docker_registry_login
+    - app_build

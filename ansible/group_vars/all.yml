@@ -1,0 +1,5 @@
+# Passed from Jenkins with -e: registry_repo, image_tag, app_port, project_dir
+app_container_name: app
+app_container_port: 8080
+build_dir: "/home/{{ ansible_user }}/src"
+image: "{{ registry_repo }}:{{ image_tag }}"

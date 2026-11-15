@@ -1,0 +1,25 @@
+---
+- name: Pull image
+  ansible.builtin.command: docker pull {{ image }}
+  become: true
+
+- name: Remove previous container
+  ansible.builtin.command: docker rm -f {{ app_container_name }}
+  become: true
+  failed_when: false
+  changed_when: true
+
+- name: Start application container
+  ansible.builtin.command: >
+    docker run -d --name {{ app_container_name }} --restart unless-stopped
+    -p {{ app_port }}:{{ app_container_port }} {{ image }}
+  become: true
+
+- name: Wait until the application answers
+  ansible.builtin.uri:
+    url: "http://localhost:{{ app_port }}/"
+    status_code: 200
+  register: health
+  retries: 30
+  delay: 2
+  until: health.status == 200

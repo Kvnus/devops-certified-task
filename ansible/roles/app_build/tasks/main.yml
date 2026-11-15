@@ -1,0 +1,41 @@
+---
+- name: Pack project sources on the Jenkins agent
+  ansible.builtin.archive:
+    path: "{{ project_dir }}"
+    dest: /tmp/app-src.tar.gz
+    format: gz
+    exclude_path:
+      - "{{ project_dir }}/terraform"
+      - "{{ project_dir }}/ansible"
+      - "{{ project_dir }}/docs"
+      - "{{ project_dir }}/target"
+      - "{{ project_dir }}/.git"
+      - "{{ project_dir }}/tf-output.json"
+  delegate_to: localhost
+  run_once: true
+
+- name: Recreate build directory
+  ansible.builtin.file:
+    path: "{{ build_dir }}"
+    state: "{{ item }}"
+    mode: "0755"
+  loop: [absent, directory]
+
+- name: Upload and unpack sources
+  ansible.builtin.unarchive:
+    src: /tmp/app-src.tar.gz
+    dest: "{{ build_dir }}"
+    extra_opts: ["--strip-components=1"]
+
+- name: Build Docker image (Maven runs inside the Dockerfile)
+  ansible.builtin.command:
+    cmd: docker build -t {{ image }} -t {{ registry_repo }}:latest .
+    chdir: "{{ build_dir }}"
+  become: true
+
+- name: Push image tags
+  ansible.builtin.command: docker push {{ item }}
+  become: true
+  loop:
+    - "{{ image }}"
+    - "{{ registry_repo }}:latest"

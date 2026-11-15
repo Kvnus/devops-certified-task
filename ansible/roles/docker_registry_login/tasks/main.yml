@@ -1,0 +1,17 @@
+---
+# A freshly created VM may refuse SSH for a minute while it boots.
+- name: Wait until the VM accepts SSH connections
+  ansible.builtin.wait_for_connection:
+    delay: 5
+    timeout: 300
+
+- name: Wait for cloud-init (Docker installation) to finish
+  ansible.builtin.command: cloud-init status --wait
+  changed_when: false
+  failed_when: false
+
+- name: Log in to Yandex Container Registry (IAM token of the VM service account)
+  ansible.builtin.command: yc-registry-login
+  become: true
+  changed_when: false
+  no_log: true

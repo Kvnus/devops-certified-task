@@ -1,0 +1,8 @@
+---
+# Pull the image from the registry on the stage VM and (re)start the container.
+- name: Deploy application to stage
+  hosts: stage
+  gather_facts: false
+  roles:
+    - docker_registry_login
+    - app_deploy
